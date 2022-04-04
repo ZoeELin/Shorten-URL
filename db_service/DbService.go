@@ -15,11 +15,11 @@ func DatabaseConnect(){
 	DB = db
 	
 	if err != nil {
-		fmt.Println("開啟 MySQL 連線發生錯誤，原因為：", err)
+		fmt.Println("Open MySQL ERROR:", err)
 		return
 	}
 	if err := db.Ping(); err != nil {
-		fmt.Println("資料庫連線錯誤，原因為：", err.Error())
+		fmt.Println("Database connection ERROR:", err.Error())
 		return
 	}
 	// defer db.Close()
@@ -31,17 +31,16 @@ func CloseDatabase(){
 
 func CreateTable() error {
 	sql := `CREATE TABLE IF NOT EXISTS urls(
-        url VARCHAR(64),
+        url VARCHAR(200),
         id VARCHAR(6) PRIMARY KEY,
         shortUrl VARCHAR(30),
         expireAt VARCHAR(20)
 	); `
 
 	if _, err := DB.Exec(sql); err != nil {
-		fmt.Println("建立 Table 發生錯誤:", err)
+		fmt.Println("Create table ERROR:", err)
 		return err
 	}
-	fmt.Println("建立 Table 成功！")
 	return nil
 }
 
@@ -49,10 +48,9 @@ func CreateTable() error {
 func InsertURL(url, id, shortUrl, expireAt string) error{
 	_,err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)",url, id, shortUrl, expireAt)
 	if err != nil{
-		fmt.Printf("建立使用者失敗，原因是：%v", err)
+		fmt.Printf("Create url ERROR:%v", err)
 		return err
 	}
-	fmt.Println("建立使用者成功！")
 	return nil
 }
 
@@ -70,13 +68,4 @@ func QueryId(short_url_id string) pojo.URL{
 	mapping := DB.QueryRow("select * from urls where id=?", short_url_id)
 	mapping.Scan(&url.Long_URL, &url.Id, &url.Short_URL, &url.ExpiredDate);
 	return *url
-}
-
-// Query all
-func QueryAll(){
-	url := new(pojo.URL)
-	mapping := DB.QueryRow("select * from urls")
-	mapping.Scan(&url.Long_URL, &url.Id, &url.Short_URL, &url.ExpiredDate);
-	fmt.Println(*url)
-	// return *url
 }

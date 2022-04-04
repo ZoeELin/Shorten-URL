@@ -13,10 +13,9 @@ func main(){
 	router := gin.Default()
 
 	router.POST("/api/v1/urls", api_service.PostUrl)
-	router.GET("/urls", api_service.FindAllUrls)
 	router.GET("/:url_id", api_service.GetUrl)
 
 	router.Run(":8000")
-	
+
 	db_service.CloseDatabase()
 }

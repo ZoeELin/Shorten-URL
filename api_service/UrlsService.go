@@ -9,13 +9,9 @@ import (
 	"math/big"
 	"strconv"
 	"fmt"
+	"time"
 )
 
-
-// Get all urls
-func FindAllUrls(c *gin.Context){
-	db_service.QueryAll()
-}
 
 // POST LongURL and Expired data
 func PostUrl(c *gin.Context){
@@ -26,10 +22,6 @@ func PostUrl(c *gin.Context){
 	if len(data.Long_URL) == 0{
 		url.Id = GenerateShortUrl()
 		url.Short_URL = "http://localhost:8000/" + url.Id
-
-		fmt.Println("ID: " + url.Id)
-		fmt.Println("Shorten URL: " + url.Short_URL)
-
 		db_service.InsertURL(url.Long_URL, url.Id, url.Short_URL, url.ExpiredDate)
 	}else {
 		url = data
@@ -48,8 +40,11 @@ func GetUrl(c *gin.Context){
 
 	url_id := c.Param("url_id")
 	data := db_service.QueryId(url_id)
-	if len(data.Id) != 0{
-		http.Redirect(w, r, data.Long_URL, 302)
+	expiration := ExpireData(data.ExpiredDate)
+	if len(data.Id) != 0 && expiration{
+		c.JSON(http.StatusNotAcceptable, "The URL is expired.")
+	}else if len(data.Id) != 0 && !expiration{
+		http.Redirect(w, r, data.Long_URL, 302)	
 	}else {
 		c.JSON(http.StatusNotAcceptable, "The short URL is not exist.")
 	}
@@ -67,8 +62,19 @@ func GenerateShortUrl() string {
 	return string(n)
 }
 
-// Check time expired?
-// func ExpiredData(time string) bool{
+// Check time expired
+func ExpireData(date string) bool{
+	var expired bool = false
 
-// }
+	layout := "2006-01-02T03:04Z"
+	expired_time, _ := time.Parse(layout, date)
+	now := time.Now()
+	expired = expired_time.Before(now)
+
+	fmt.Println(now)
+	fmt.Println(expired_time)
+	fmt.Println(expired)
+
+	return expired
+}
 
