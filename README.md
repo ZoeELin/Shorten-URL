@@ -1,4 +1,5 @@
 # Shorten URL
+此服務可以將原本的 URL 縮短成精簡的 URL，當短網址被使用時，系統會先查出原本的網址，再以 URL 重新導向(HTTP 302)來將縮短後的位址重新導向到原來的 URL。
 
 ## 產生短網址
 利用 crypto/rand package 使得 A-Z, a-z, 0-9 的字元隨機產生六位數的字串作為短網址的 ID
@@ -16,7 +17,7 @@ return string(n)
 
 此設計將遇到些問題，當資料庫已經存放上千筆資料過後，會導致將花費更多的時間找出尚未重複的隨機字串，且資料庫存放的空間將越來越少。如果可以，還可以再設計一些功能：當透過短網址 GET 一筆資料時，紀錄此筆資料透過短網址搜尋的點擊次數，有了此數據就能定期的將點擊次數為零或是最少的資料刪除，減少資料庫的負擔。
 
-## 時間的處理
+## 時間處理
 在Go語言中，時間包提供了確定和查看時間的函數，在time package 中的 Parse 函數用於解析格式化的字符串，然後查找它形成的時間值，layout 通過以哪種方式顯示參考時間(即定義為 Mon Jan 2 15:04:05 -0700 MST 2006)來指定格式。
 
 想將得知 expireAt 到期與否，可以使用套件提供的 time.now( ) 獲得當下時間，再使用 comp_time.Before(now) 檢查時間是不是有超過現在的時間
@@ -62,7 +63,7 @@ server.Run(":8000")
 ```
 
 ## MySQL
-Golang 可以通過 database/sql package 實現了對 RDBMS 的使用，在 golang 中操作 mysql 資料庫比較簡單，package 本身也是使用go 寫的，golang 原生有提供關於 sql 的抽象介面 database/sql，但後來有人利用他封裝了 go-sql-driver 支援 database/sql，我們會利用這個 package 進行練習。
+Golang 可以通過 database/sql package 實現了對 RDBMS 的使用，在 golang 中操作 mysql 資料庫比較簡單，package 本身也是使用 go 寫的，golang 原生有提供關於 sql 的抽象介面 database/sql，但後來有人利用他封裝了 go-sql-driver 支援 database/sql，我們會利用這個 package 進行實作。
 #### 連線
 首先我們要先匯入 database/sql 與 github.com/go-sql-driver/mysql，mysql driver 前面要加上 _
 ```
@@ -78,7 +79,7 @@ Golang 可以通過 database/sql package 實現了對 RDBMS 的使用，在 gola
 #### 建立Table
 透過 mysql 的 driver 建立的話，他有內建 Exec 的方法，可以直接執行原生的SQL指令，因此只要建立一個方法名為 CreateTable，然後把一開始連線建立好的 DB 當作參數傳入，之後再利用 Exec 的指令建立 Table
 
-Table中設計四欄位，分別為url, id, shortUrl, expireAt來存放URL與對應的id資訊，如下
+Table 中設計四欄位，分別為 url, id, shortUrl, expireAt 來存放 URL 與對應的 id 資訊，如下
 ```
 func CreateTable() error {
 	sql := `CREATE TABLE IF NOT EXISTS urls(
@@ -136,3 +137,9 @@ func QueryId(short_url_id string) pojo.URL{
 	return *url
 }
 ```
+
+## 短網址服務的 RESTful API 
+<http://www.zoe-lin.me/static/index.html>
+先前已經有使用 Python Flask 開發過短網址服務，能將過將原本的網址縮短成精簡的短網址，當短網址被使用時，系統會先查出原本的網址，再以 URL 重新導向(HTTP 302)來將縮短後的位址重新導向到原來的 URL，並建立了一個 PostgreSQL 資料庫，儲存⻑網址與短網址之間相對應的資料。此服務也包括紀錄使用短網址搜尋的點擊次數、儲存搜尋短網址的使用者表頭資料，以計算出點擊率並且得知點擊者的時間分佈和族群以及前端的 HTML/CSS/JavaScript 製作，最後把已設計完成的 API 部署至 Heroku 雲平台上，將自己的網域轉向至 Heroku 的 API 上。
+
+在時間充足的情況下，接下來的目標是希望能夠運用上述的設計開發 Golang Gin 的短網址服務，提供更完整的使用介面和體驗。
