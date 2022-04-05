@@ -17,9 +17,9 @@ return string(n)
 此設計將遇到些問題，當資料庫已經存放上千筆資料過後，會導致將花費更多的時間找出尚未重複的隨機字串，且資料庫存放的空間將越來越少。如果可以，還可以再設計一些功能：當透過短網址 GET 一筆資料時，紀錄此筆資料透過短網址搜尋的點擊次數，有了此數據就能定期的將點擊次數為零或是最少的資料刪除，減少資料庫的負擔。
 
 ## 時間的處理
-在Go語言中，時間包提供了確定和查看時間的函數，在time package 中的 Parse() 函數用於解析格式化的字符串，然後查找它形成的時間值，layout 通過以哪種方式顯示參考時間(即定義為 Mon Jan 2 15:04:05 -0700 MST 2006)來指定格式。
+在Go語言中，時間包提供了確定和查看時間的函數，在time package 中的 Parse 函數用於解析格式化的字符串，然後查找它形成的時間值，layout 通過以哪種方式顯示參考時間(即定義為 Mon Jan 2 15:04:05 -0700 MST 2006)來指定格式。
 
-想將得知 expireAt 到期與否，可以使用套件提供的 time.now( ) 獲得當下時間，再使用 expired_time.Before(now) 檢查時間是不是有超過現在的時間
+想將得知 expireAt 到期與否，可以使用套件提供的 time.now( ) 獲得當下時間，再使用 comp_time.Before(now) 檢查時間是不是有超過現在的時間
 ```
 func ExpireData(date string) bool{
 	var expired bool = false
@@ -31,7 +31,7 @@ func ExpireData(date string) bool{
 }
 ```
 
-另外，目前經由短網址重新導向的 URL 會先檢查 expireAt 是否已經到期在進行動作，如果還有充裕的時間，能再將資料庫系統設計的更周全，當 expired date 已經到了期限時，會將該筆資料從資料庫中刪除，也可以解決上述短網址產生有限的問題。
+另外，目前經由短網址重新導向 URL 前會先檢查 expireAt 是否已經到期在進行動作，如果還有充裕的時間，能再將資料庫系統設計的更周全，當 expired date 已經到了期限時，會將該筆資料從資料庫中刪除，也可以解決上述短網址產生數量有限的問題。
 
 ## Gin
 使用golang打造的web框架有很多種，例如 Beego、Echo 與 Gin，在使用 benchmark 的情況下 Echo 與 Gin 的效能都已經佔優勢了，兩個的框架寫法相似且簡潔，但 gin 內建了返回 html 文件的方法，因此更適合運用在 redirect URL(HTTP 302) 的短網址服務API。
