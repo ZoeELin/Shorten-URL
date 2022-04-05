@@ -19,6 +19,18 @@ return string(n)
 ## 時間的處理
 在Go語言中，時間包提供了確定和查看時間的函數，在time package 中的 Parse() 函數用於解析格式化的字符串，然後查找它形成的時間值，layout 通過以哪種方式顯示參考時間(即定義為 Mon Jan 2 15:04:05 -0700 MST 2006)來指定格式。
 
+想將得知 expireAt 到期與否，可以使用套件提供的 time.now( ) 獲得當下時間，再使用 expired_time.Before(now) 檢查時間是不是有超過現在的時間
+```
+func ExpireData(date string) bool{
+	var expired bool = false
+	layout := "2006-01-02T03:04Z"
+	expired_time, _ := time.Parse(layout, date)
+	now := time.Now()
+	expired = expired_time.Before(now)
+	return expired
+}
+```
+
 另外，目前經由短網址重新導向的 URL 會先檢查 expireAt 是否已經到期在進行動作，如果還有充裕的時間，能再將資料庫系統設計的更周全，當 expired date 已經到了期限時，會將該筆資料從資料庫中刪除，也可以解決上述短網址產生有限的問題。
 
 ## Gin
@@ -103,10 +115,10 @@ type URL struct{
 	ExpiredDate string 
 }
 ```
-透過 Query 的方法執行 select 指令，支援將 Where 的值抽出來作為變數，我們這邊可分為兩種不一樣的查詢，分別為 QueryId() 與QueryUrl()
+透過 Query 的方法執行 select 指令，支援將 Where 的值抽出來作為變數，我們這邊可分為兩種不一樣的查詢，分別為 QueryId( ) 與QueryUrl( )
 
-QueryUrl() 為從原始的 URL 在資料庫進行查詢，而得到 struct 結構的資料
-QueryId() 則是透過產生透過網址的id在資料庫中進行查詢，而得到整筆資料
+QueryUrl( ) 為從原始的 URL 在資料庫進行查詢，而得到 struct 結構的資料
+QueryId( ) 則是透過產生透過網址的id在資料庫中進行查詢，而得到整筆資料
 ```
 // Query by long url
 func QueryUrl(long_url string) pojo.URL{
