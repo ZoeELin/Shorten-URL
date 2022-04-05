@@ -1,19 +1,19 @@
 package db_service
 
 import (
-    "fmt"
-    "database/sql"
+	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"golangAPI/pojo"
 )
 
 var DB *sql.DB
 
-func DatabaseConnect(){
+func DatabaseConnect() {
 	conn := "root:Zozo0411@tcp(127.0.0.1:3306)/shorten_url"
 	db, err := sql.Open("mysql", conn)
 	DB = db
-	
+
 	if err != nil {
 		fmt.Println("Open MySQL ERROR:", err)
 		return
@@ -25,7 +25,7 @@ func DatabaseConnect(){
 	// defer db.Close()
 }
 
-func CloseDatabase(){
+func CloseDatabase() {
 	defer DB.Close()
 }
 
@@ -45,9 +45,9 @@ func CreateTable() error {
 }
 
 // Add into database
-func InsertURL(url, id, shortUrl, expireAt string) error{
-	_,err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)",url, id, shortUrl, expireAt)
-	if err != nil{
+func InsertURL(url, id, shortUrl, expireAt string) error {
+	_, err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)", url, id, shortUrl, expireAt)
+	if err != nil {
 		fmt.Printf("Create url ERROR:%v", err)
 		return err
 	}
@@ -55,17 +55,17 @@ func InsertURL(url, id, shortUrl, expireAt string) error{
 }
 
 // Query by long url
-func QueryUrl(long_url string) pojo.URL{
+func QueryUrl(long_url string) pojo.URL {
 	url := new(pojo.URL)
 	mapping := DB.QueryRow("select * from urls where url=?", long_url)
-	mapping.Scan(&url.Long_URL, &url.Id, &url.Short_URL, &url.ExpiredDate);
+	mapping.Scan(&url.Long_URL, &url.Id, &url.Short_URL, &url.ExpiredDate)
 	return *url
 }
 
 // Query by short url
-func QueryId(short_url_id string) pojo.URL{
+func QueryId(short_url_id string) pojo.URL {
 	url := new(pojo.URL)
 	mapping := DB.QueryRow("select * from urls where id=?", short_url_id)
-	mapping.Scan(&url.Long_URL, &url.Id, &url.Short_URL, &url.ExpiredDate);
+	mapping.Scan(&url.Long_URL, &url.Id, &url.Short_URL, &url.ExpiredDate)
 	return *url
 }

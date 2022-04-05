@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	"golangAPI/api_service"
 	"golangAPI/db_service"
-	_ "github.com/go-sql-driver/mysql"
 )
 
-func main(){
+func main() {
 	db_service.DatabaseConnect()
 	db_service.CreateTable()
 	router := gin.Default()
