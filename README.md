@@ -1,8 +1,7 @@
 # Shorten URL
 
-
 ## 產生短網址
-利用crypto/rand package 使得A~Z, a~z, 0~9的字元隨機產生六位數的字串作為短網址的ID
+利用 crypto/rand package 使得 A-Z, a-z, 0-9 的字元隨機產生六位數的字串作為短網址的 ID
 ```
 const base = 36
 size := big.NewInt(base)
@@ -13,22 +12,27 @@ for i, _ := range n {
 }
 return string(n)
 ```
-在GenerateShortUrl()設計中，經過隨機字串的產生後，需到資料庫進行比對，如果已經有相同的字串，便重新產生隨機字串，直到無重複為止。
+在 GenerateShortUrl( ) 設計中，經過隨機字串的產生後，需到資料庫進行比對，如果已經有相同的字串，便重新產生隨機字串，直到無重複為止。
 
-此設計將遇到些問題，當資料庫已經存放上千筆資料過後，會導致將花費更多的時間找出尚未重複的隨機字串，且資料庫存放的空間將越來越少。如果可以，還可以再設計一項功能，當expired date已經到了期限時，會將該筆資料在資料庫中刪除。
+此設計將遇到些問題，當資料庫已經存放上千筆資料過後，會導致將花費更多的時間找出尚未重複的隨機字串，且資料庫存放的空間將越來越少。如果可以，還可以再設計一些功能：當透過短網址 GET 一筆資料時，紀錄此筆資料透過短網址搜尋的點擊次數，有了此數據就能定期的將點擊次數為零或是最少的資料刪除，減少資料庫的負擔。
+
+## 時間的處理
+在Go語言中，時間包提供了確定和查看時間的函數，在time package 中的 Parse() 函數用於解析格式化的字符串，然後查找它形成的時間值，layout 通過以哪種方式顯示參考時間(即定義為 Mon Jan 2 15:04:05 -0700 MST 2006)來指定格式。
+
+另外，目前經由短網址重新導向的 URL 會先檢查 expireAt 是否已經到期在進行動作，如果還有充裕的時間，能再將資料庫系統設計的更周全，當 expired date 已經到了期限時，會將該筆資料從資料庫中刪除，也可以解決上述短網址產生有限的問題。
 
 ## Gin
-使用golang打造的web框架有很多種，例如Beego、Echo與Gin，在使用benchmark的情況下Echo與Gin的效能都已經佔優勢了，兩個的框架寫法相似且簡潔，但gin內建了返回html文件的方法，因此更適合運用在redirect URL(HTTP 302)的短網址服務API。
+使用golang打造的web框架有很多種，例如 Beego、Echo 與 Gin，在使用 benchmark 的情況下 Echo 與 Gin 的效能都已經佔優勢了，兩個的框架寫法相似且簡潔，但 gin 內建了返回 html 文件的方法，因此更適合運用在 redirect URL(HTTP 302) 的短網址服務API。
 
-促使我選擇gin來開發golang API是因為gin有以下主要的特點
-* 基於原生的net/http package進行封裝
+促使我選擇 gin 來開發 golang API 是因為 gin 有以下主要的特點
+* 基於原生的 net/http package 進行封裝
 * 優秀的性能表現提供好的服務
-* 使用極其快速的http router
-* http request與response的驚喜包 - gin.Context
+* 使用極其快速的 http router
+* http request 與 response 的驚喜包 - gin.Context
 
 
 #### 匯入gin package
-一開始要使用gin需要進行import，因此我們就先將package進行import
+一開始要使用 gin 需要進行 import，因此我們就先將 package 進行 import
 ```
 import (
     "github.com/gin-gonic/gin"
@@ -46,7 +50,7 @@ server.Run(":8000")
 ```
 
 ## MySQL
-Golang可以通過database/sql package實現了對RDBMS的使用，在golang中操作mysql資料庫比較簡單，package本身也是使用go寫的，golang原生有提供關於sql的抽象介面database/sql，但後來有人利用他封裝了go-sql-driver支援database/sql，我們會利用這個package進行練習。
+Golang 可以通過 database/sql package 實現了對 RDBMS 的使用，在 golang 中操作 mysql 資料庫比較簡單，package 本身也是使用go 寫的，golang 原生有提供關於 sql 的抽象介面 database/sql，但後來有人利用他封裝了 go-sql-driver 支援 database/sql，我們會利用這個 package 進行練習。
 #### 連線
 首先我們要先匯入 database/sql 與 github.com/go-sql-driver/mysql，mysql driver 前面要加上 _
 ```
@@ -60,7 +64,7 @@ Golang可以通過database/sql package實現了對RDBMS的使用，在golang中�
 	db, err := sql.Open("mysql", conn)
 ```
 #### 建立Table
-透過mysql的driver建立的話，他有內建Exec的方法，可以直接執行原生的SQL指令，因此只要建立一個方法名為CreateTable，然後把一開始連線建立好的DB當作參數傳入，之後再利用Exec的指令建立Table
+透過 mysql 的 driver 建立的話，他有內建 Exec 的方法，可以直接執行原生的SQL指令，因此只要建立一個方法名為 CreateTable，然後把一開始連線建立好的 DB 當作參數傳入，之後再利用 Exec 的指令建立 Table
 
 Table中設計四欄位，分別為url, id, shortUrl, expireAt來存放URL與對應的id資訊，如下
 ```
@@ -80,7 +84,7 @@ func CreateTable() error {
 }
 ```
 #### 新增資料
-經過POST所獲得的url與expireAt透過產生對應的網址id後，將url, id, shortUrl, expireAt要存入資料庫的值使用Exec的指令即可新增資料
+經過 POST 所獲得的 url 與 expireAt 透過產生對應的網址id後，將 url, id, shortUrl, expireAt 要存入資料庫的值使用 Exec 的指令即可新增資料
 ```
 _,err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)",url, id, shortUrl, expireAt)
 if err != nil{
@@ -90,7 +94,7 @@ if err != nil{
 return nil
 ```
 #### 查詢資料
-Driver他也提供了Query的語法可以供我們進行查詢，首先要定義搜尋回來的資料結構，URL有Long_URL, Id, Short_URL 與 ExpiredDate四個參數，因此我們可以建立一個struct為
+Driver 他也提供了 Query 的語法可以供我們進行查詢，首先要定義搜尋回來的資料結構，URL 有 Long_URL, Id, Short_URL 與 ExpiredDate 四個參數，因此我們可以建立一個 struct 為
 ```
 type URL struct{
 	Long_URL string 
@@ -99,10 +103,10 @@ type URL struct{
 	ExpiredDate string 
 }
 ```
-透過Query的方法執行select指令，支援將Where的值抽出來作為變數，我們這邊可分為兩種不一樣的查詢，分別為QueryId()與QueryUrl()
+透過 Query 的方法執行 select 指令，支援將 Where 的值抽出來作為變數，我們這邊可分為兩種不一樣的查詢，分別為 QueryId() 與QueryUrl()
 
-QueryUrl()為從原始的URL在資料庫進行查詢，而得到struct結構的資料
-QueryId()則是透過產生透過網址的id在資料庫中進行查詢，而得到整筆資料
+QueryUrl() 為從原始的 URL 在資料庫進行查詢，而得到 struct 結構的資料
+QueryId() 則是透過產生透過網址的id在資料庫中進行查詢，而得到整筆資料
 ```
 // Query by long url
 func QueryUrl(long_url string) pojo.URL{
