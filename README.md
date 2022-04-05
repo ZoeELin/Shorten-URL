@@ -138,7 +138,7 @@ func QueryId(short_url_id string) pojo.URL{
 ```
 
 ## 短網址服務的 RESTful API 
-<http://www.zoe-lin.me/static/index.html> + `  `
+<http://www.zoe-lin.me/static/index.html>  
 先前已經有使用 Python Flask 開發過短網址服務，能將過將原本的網址縮短成精簡的短網址，當短網址被使用時，系統會先查出原本的網址，再以 URL 重新導向(HTTP 302)來將縮短後的位址重新導向到原來的 URL，並建立了一個 PostgreSQL 資料庫，儲存⻑網址與短網址之間相對應的資料。此服務也包括紀錄使用短網址搜尋的點擊次數、儲存搜尋短網址的使用者表頭資料，以計算出點擊率並且得知點擊者的時間分佈和族群以及前端的 HTML/CSS/JavaScript 製作，最後把已設計完成的 API 部署至 Heroku 雲平台上，將自己的網域轉向至 Heroku 的 API 上。
 
 在時間充足的情況下，接下來的目標是希望能夠運用上述的設計開發 Golang Gin 的短網址服務，提供更完整的使用介面和體驗。
