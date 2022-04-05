@@ -8,7 +8,6 @@ import (
 	"crypto/rand"
 	"math/big"
 	"strconv"
-	"fmt"
 	"time"
 )
 
@@ -52,6 +51,7 @@ func GetUrl(c *gin.Context){
 
 // Create shorter URL
 func GenerateShortUrl() string {
+	var return_id string = ""
 	const base = 36
 	size := big.NewInt(base)
 	n := make([]byte, 6)
@@ -59,22 +59,22 @@ func GenerateShortUrl() string {
 		c, _ := rand.Int(rand.Reader, size)
 		n[i] = strconv.FormatInt(c.Int64(), base)[0]
 	}
-	return string(n)
+	data := db_service.QueryId(string(n))
+	if len(data.Id) != 0{
+		return_id = GenerateShortUrl()
+        return return_id
+    }
+	return_id = string(n)
+	return return_id
 }
 
 // Check time expired
 func ExpireData(date string) bool{
 	var expired bool = false
-
 	layout := "2006-01-02T03:04Z"
 	expired_time, _ := time.Parse(layout, date)
 	now := time.Now()
 	expired = expired_time.Before(now)
-
-	fmt.Println(now)
-	fmt.Println(expired_time)
-	fmt.Println(expired)
-
 	return expired
 }
 
