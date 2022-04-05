@@ -8,18 +8,18 @@ Gin是一套使用golang打造的web框架，gin主要的特點如下
 #### 匯入gin package
 一開始要使用gin需要進行import，因此我們就先將package進行import
 ```
-    import (
-        "github.com/gin-gonic/gin"
-    )
+import (
+    "github.com/gin-gonic/gin"
+)
 ```
 #### 設定 http routing
 ```
-	router.POST("/api/v1/urls", api_service.PostUrl)
-	router.GET("/:url_id", api_service.GetUrl)
+router.POST("/api/v1/urls", api_service.PostUrl)
+router.GET("/:url_id", api_service.GetUrl)
 ```
 #### 啟動Gin server
 ```
-	server.Run(":8000")
+server.Run(":8000")
 ```
 
 ## MySQL
@@ -39,28 +39,28 @@ Gin是一套使用golang打造的web框架，gin主要的特點如下
 #### 建立Table
 透過mysql的driver建立的話，他有內建Exec的方法，可以直接執行原生的SQL指令，因此只要建立一個方法名為CreateTable，然後把一開始連線建立好的DB當作參數傳入，之後再利用Exec的指令建立Table即可
 ```
-	sql := `CREATE TABLE IF NOT EXISTS urls(
-        url VARCHAR(200),
-        id VARCHAR(6) PRIMARY KEY,
-        shortUrl VARCHAR(30),
-        expireAt VARCHAR(20)
-	); `
+sql := `CREATE TABLE IF NOT EXISTS urls(
+    url VARCHAR(200),
+    id VARCHAR(6) PRIMARY KEY,
+    shortUrl VARCHAR(30),
+    expireAt VARCHAR(20)
+); `
 
-	if _, err := DB.Exec(sql); err != nil {
-		fmt.Println("Create table ERROR:", err)
-		return err
-	}
-	return nil
+if _, err := DB.Exec(sql); err != nil {
+    fmt.Println("Create table ERROR:", err)
+    return err
+}
+return nil
 ```
 #### 新增資料
 一樣透過 Exec 的指令即可
 ```
-	_,err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)",url, id, shortUrl, expireAt)
-	if err != nil{
-		fmt.Printf("Create url ERROR:%v", err)
-		return err
-	}
-	return nil
+_,err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)",url, id, shortUrl, expireAt)
+if err != nil{
+    fmt.Printf("Create url ERROR:%v", err)
+    return err
+}
+return nil
 ```
 #### 查詢資料
 使用driver的時候，他有提供Query的語法可以供我們進行查詢，首先要定義搜尋回來的資料結構，URL有Long_URL, Id, Short_URL 與 ExpiredDate四個參數，因此我們可以建立一個struct為
