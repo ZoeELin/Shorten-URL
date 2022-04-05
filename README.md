@@ -43,7 +43,7 @@ func ExpireData(date string) bool{
 * http request 與 response 的驚喜包 - gin.Context
 
 
-#### 匯入gin package
+### 匯入gin package
 一開始要使用 gin 需要進行 import，因此我們就先將 package 進行 import
 ```
 import (
@@ -51,19 +51,19 @@ import (
     "net/http"
 )
 ```
-#### 設定 http routing
+### 設定 http routing
 ```
 router.POST("/api/v1/urls", api_service.PostUrl)
 router.GET("/:url_id", api_service.GetUrl)
 ```
-#### 啟動Gin server
+### 啟動Gin server
 ```
 server.Run(":8000")
 ```
 
 ## MySQL
 Golang 可以通過 database/sql package 實現了對 RDBMS 的使用，在 golang 中操作 mysql 資料庫比較簡單，package 本身也是使用 go 寫的，golang 原生有提供關於 sql 的抽象介面 database/sql，但後來有人利用他封裝了 go-sql-driver 支援 database/sql，我們會利用這個 package 進行實作。
-#### 連線
+### 連線
 首先我們要先匯入 database/sql 與 github.com/go-sql-driver/mysql，mysql driver 前面要加上 _
 ```
     import (
@@ -75,7 +75,7 @@ Golang 可以通過 database/sql package 實現了對 RDBMS 的使用，在 gola
 	conn := "<user_name>:<password>@<network>(<server>:<port>)/<database>"
 	db, err := sql.Open("mysql", conn)
 ```
-#### 建立Table
+### 建立Table
 透過 mysql 的 driver 建立的話，他有內建 Exec 的方法，可以直接執行原生的SQL指令，因此只要建立一個方法名為 CreateTable，然後把一開始連線建立好的 DB 當作參數傳入，之後再利用 Exec 的指令建立 Table
 
 Table 中設計四欄位，分別為 url, id, shortUrl, expireAt 來存放 URL 與對應的 id 資訊，如下
@@ -95,7 +95,7 @@ func CreateTable() error {
 	return nil
 }
 ```
-#### 新增資料
+### 新增資料
 經過 POST 所獲得的 url 與 expireAt 透過產生對應的網址id後，將 url, id, shortUrl, expireAt 要存入資料庫的值使用 Exec 的指令即可新增資料
 ```
 _,err := DB.Exec("insert INTO urls(url, id, shortUrl, expireAt) values(?,?,?,?)",url, id, shortUrl, expireAt)
@@ -105,7 +105,7 @@ if err != nil{
 }
 return nil
 ```
-#### 查詢資料
+### 查詢資料
 Driver 他也提供了 Query 的語法可以供我們進行查詢，首先要定義搜尋回來的資料結構，URL 有 Long_URL, Id, Short_URL 與 ExpiredDate 四個參數，因此我們可以建立一個 struct 為
 ```
 type URL struct{
